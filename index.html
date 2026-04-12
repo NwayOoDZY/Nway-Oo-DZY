@@ -37,8 +37,6 @@ const fmt = (n) => (n || 0).toLocaleString() + " MMK";
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/1LpTBZvw43V7EqiWmMYukhOXf2KImMG-vGGidSmgyjR8/export?format=csv';
 const sheetEditUrl = 'https://docs.google.com/spreadsheets/d/1LpTBZvw43V7EqiWmMYukhOXf2KImMG-vGGidSmgyjR8/edit?pli=1&gid=0#gid=0';
 
-function pKey(donorId, year, month) { return donorId + "-" + year + "-" + month; }
-
 function dlImage(url, name) {
   const a = document.createElement("a");
   a.href = url;
@@ -46,10 +44,10 @@ function dlImage(url, name) {
   a.target = "_blank";
   a.click();
 }
-    function App() {
+
+function App() {
   const [donors, setDonors] = useState([]);
   const [contribs, setContribs] = useState([]);
-  const [photos, setPhotos] = useState({});
   const [loading, setLoading] = useState(true);
   
   const [page, setPage] = useState("dashboard");
@@ -95,14 +93,9 @@ function dlImage(url, name) {
       .catch(function(err) {
         console.error(err);
         setLoading(false);
-        alert("ဒေတာများ ဆွဲယူရာတွင် အခက်အခဲရှိနေပါသည်။ Google Sheets ၏ Share နေရာတွင် 'Anyone with the link' လို့ ပြောင်းထားခြင်း ရှိမရှိ သေချာစစ်ဆေးပေးပါ။");
+        alert("ဒေတာများ ဆွဲယူရာတွင် အခက်အခဲရှိနေပါသည်။");
       });
   }, []);
-
-  function showToast(msg, isErr) {
-    setToast({ msg, isErr: !!isErr });
-    setTimeout(function() { setToast(null); }, 2500);
-  }
 
   const totals = useMemo(function() {
     const m = {};
@@ -147,11 +140,10 @@ function dlImage(url, name) {
         })}
       </aside>
       <main style={S.main}>
-        {toast&&<div style={{...S.toast,background:toast.isErr?"#ef4444":"#22c55e"}}>{toast.msg}</div>}
         {page==="dashboard"&&<Dashboard donors={donors} totals={totals} grand={grand} contribs={contribs} goDetail={function(d){setSelDonor(d);setPage("detail");}} />}
         {page==="donors"&&<DonorList donors={filtered} totals={totals} search={search} setSearch={setSearch} goDetail={function(d){setSelDonor(d);setPage("detail");}} />}
-        {page==="detail"&&selDonor&&<Detail donor={selDonor} contribs={contribs} photos={photos} back={function(){setPage("donors");}} />}
-        {page==="reports"&&<Reports donors={donors} contribs={contribs} totals={totals} grand={grand} />}
+        {page==="detail"&&selDonor&&<Detail donor={selDonor} contribs={contribs} back={function(){setPage("donors");}} />}
+        {page==="reports"&&<Reports donors={donors} totals={totals} grand={grand} />}
         {page==="admin"&&<Admin adminOk={adminOk} adminPw={adminPw} adminErr={adminErr} setAdminPw={setAdminPw} tryLogin={tryLogin} />}
       </main>
     </div>
@@ -210,25 +202,12 @@ function DonorList({ donors, totals, search, setSearch, goDetail }) {
   );
 }
 
-function Detail({ donor, contribs, photos, back }) {
+function Detail({ donor, contribs, back }) {
   const mine = contribs.filter(function(c){return c.donorId===donor.id;});
   const total = mine.reduce(function(s,c){return s+c.amount;},0);
-  const [lightbox,setLightbox] = useState(null);
 
   return (
     <div style={S.page}>
-      {lightbox&&(
-        <div style={S.lbBg} onClick={function(){setLightbox(null);}}>
-          <div style={{position:"relative"}} onClick={function(e){e.stopPropagation();}}>
-            <img src={lightbox} alt="cert"
-              style={{maxWidth:"88vw",maxHeight:"80vh",borderRadius:12,boxShadow:"0 8px 40px rgba(0,0,0,.6)",display:"block"}} />
-            <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:12}}>
-              <button style={{...S.btnP,fontSize:13}} onClick={function(){dlImage(lightbox,"certificate.jpg");}}>Download</button>
-              <button style={{...S.btnS,fontSize:13}} onClick={function(){setLightbox(null);}}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
       <button style={S.backBtn} onClick={back}>Back</button>
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
         <h1 style={{...S.h1,margin:0}}>{donor.name}</h1>
@@ -244,18 +223,14 @@ function Detail({ donor, contribs, photos, back }) {
           <div style={{color:"#94a3b8",textAlign:"center",padding:20}}>No records yet</div>
         ):(
           <div>
-            {mine.map(function(c, idx){
-              return (
-                <div key={idx} style={S.monthRow}>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                      <span style={{fontWeight:700,color:"#334155",minWidth:80}}>Total Record</span>
-                      <span style={{fontWeight:800,color:"#6366f1",fontSize:15}}>{fmt(c.amount)}</span>
-                    </div>
-                  </div>
+            <div style={S.monthRow}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                  <span style={{fontWeight:700,color:"#334155",minWidth:80}}>Total Record</span>
+                  <span style={{fontWeight:800,color:"#6366f1",fontSize:15}}>{fmt(total)}</span>
                 </div>
-              );
-            })}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -263,7 +238,7 @@ function Detail({ donor, contribs, photos, back }) {
   );
 }
 
-function Reports({ donors, contribs, totals, grand }) {
+function Reports({ donors, totals, grand }) {
   const rows=donors.map(function(d){return{...d,t:(totals[d.id]||0)};}).filter(function(d){return d.t>0;}).sort(function(a,b){return b.t-a.t;});
   const ft=rows.reduce(function(s,d){return s+d.t;},0);
   
@@ -336,7 +311,7 @@ const S = {
   root:     {display:"flex",minHeight:"100vh",background:"#f8fafc",fontFamily:"'Noto Sans Myanmar','Segoe UI',sans-serif"},
   sidebar:  {width:190,background:"#1e1b4b",display:"flex",flexDirection:"column",padding:"20px 0",gap:2,flexShrink:0},
   logo:     {display:"flex",alignItems:"center",gap:8,padding:"0 16px 20px",borderBottom:"1px solid #312e81"},
-  logoTxt:  {color:"#c7  logoTxt:  {color:"#c7d2fe",fontWeight:700,fontSize:16},
+  logoTxt:  {color:"#c7d2fe",fontWeight:700,fontSize:16},
   navBtn:   {display:"flex",alignItems:"center",gap:10,padding:"11px 16px",background:"transparent",border:"none",color:"#a5b4fc",fontSize:14,cursor:"pointer"},
   navActive:{background:"#312e81",color:"#fff",borderLeft:"3px solid #818cf8"},
   main:     {flex:1,overflow:"auto",position:"relative"},
@@ -360,9 +335,7 @@ const S = {
   btnS:     {padding:"5px 10px",background:"#f1f5f9",color:"#334155",border:"none",borderRadius:6,fontSize:12,cursor:"pointer"},
   backBtn:  {background:"none",border:"none",color:"#6366f1",cursor:"pointer",fontSize:14,marginBottom:12,padding:0},
   th:       {padding:"8px 12px",textAlign:"left",fontSize:12,fontWeight:700,color:"#94a3b8"},
-  td:       {padding:"10px 12px",fontSize:14,color:"#334155"},
-  toast:    {position:"fixed",top:20,right:20,color:"#fff",padding:"10px 20px",borderRadius:10,fontWeight:600,fontSize:14,zIndex:9999,boxShadow:"0 4px 12px rgba(0,0,0,.2)"},
-  lbBg:    {position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:9999,cursor:"pointer"},
+  td:       {padding:"10px 12px",fontSize:14,color:"#334155"}
 };
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
