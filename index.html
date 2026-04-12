@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nway Oo DZY - Donor Hub</title>
   <meta name="description" content="Nway Oo DZY Donation Records" />
-  <!-- PWA manifest inline -->
   <link rel="manifest" href="data:application/json,{%22name%22:%22Nway+Oo+DZY%22,%22short_name%22:%22NwayOo%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%231e1b4b%22,%22theme_color%22:%22%236366f1%22}" />
   <meta name="theme-color" content="#6366f1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,138 +16,31 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: "Noto Sans Myanmar", "Segoe UI", sans-serif; }
     #root { min-height: 100vh; }
-    /* Mobile responsive */
     @media (max-width: 640px) {
       aside { width: 52px !important; }
       aside span:last-child { display: none !important; }
     }
+    .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f8fafc; color: #6366f1; font-weight: bold; }
   </style>
-
-  
-  </head>
+</head>
 <body>
   <div id="root"></div>
-  <!-- React + Babel CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="text/babel">
 const { useState, useEffect, useMemo } = React;
 
-
 const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fmt = (n) => (n || 0).toLocaleString() + " MMK";
 
-const COL_MAP = [
-  [2024,11],[2024,12],
-  [2025,1],[2025,2],[2025,3],[2025,4],[2025,5],[2025,6],
-  [2025,7],[2025,8],[2025,9],[2025,10],[2025,11],[2025,12],
-  [2026,1],[2026,2],[2026,3],[2026,4]
-];
+// ဒေတာလှမ်းယူရန် CSV လင့်ခ် (အများပြည်သူမြင်နိုင်သော လင့်ခ်)
+const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNQ_TIXPVp39kPPJEBKoBcoiDtPrJDeodJcH_6a7e9GxqfhMAAHLPCAiw5CyBNQipho4tpsVjZs3mc/pub?output=csv';
 
-function makeCon(id, vals) {
-  const out = [];
-  for (let i = 0; i < vals.length; i++) {
-    if (vals[i] > 0) out.push({ donorId: id, year: COL_MAP[i][0], month: COL_MAP[i][1], amount: vals[i] });
-  }
-  return out;
-}
-
-const SEED_DONORS = [
-  { id: 1,  name: "နွေဦးစပယ်",             active: true },
-  { id: 2,  name: "Ma Kyu Kyu Aye",          active: true },
-  { id: 3,  name: "Piano PK",                active: true },
-  { id: 4,  name: "Su Zanna",                active: true },
-  { id: 5,  name: "Than Htaike Thu",         active: true },
-  { id: 6,  name: "Revolution family",       active: true },
-  { id: 7,  name: "SsitA",                   active: true },
-  { id: 8,  name: "Kyi Kyi Lwin",            active: true },
-  { id: 9,  name: "PS and BBW",              active: true },
-  { id: 10, name: "TIN Family",              active: true },
-  { id: 11, name: "Myat Su Mon",             active: true },
-  { id: 12, name: "L.W.P",                   active: true },
-  { id: 13, name: "Phyu Phyu Hninn",         active: true },
-  { id: 14, name: "Khin Yu Yu Win",          active: true },
-  { id: 15, name: "Moth Moth",               active: true },
-  { id: 16, name: "K Khine",                 active: true },
-  { id: 17, name: "Grace Moh Moh",           active: true },
-  { id: 18, name: "Aunty Nan",               active: true },
-  { id: 19, name: "Khin Myat",               active: true },
-  { id: 20, name: "Kyaw Kyaw Aung",          active: true },
-  { id: 21, name: "H.L.O.H",                 active: true },
-  { id: 22, name: "Charlotte",               active: true },
-  { id: 23, name: "JESSY and KIT KIT FAMILY",active: true },
-  { id: 24, name: "ko Lin Latt",             active: true },
-  { id: 25, name: "Daw Mu Mu Myint",         active: true },
-  { id: 26, name: "Daw Lat Lat",             active: true },
-  { id: 27, name: "My Health Me Staffs",     active: true },
-  { id: 28, name: "STA",                     active: true },
-];
-
-const SEED_CONTRIBS = [
-  ...makeCon(1,  [300000,300000,300000,300000,300000,300000,300000,300000,300000,300000,300000,300000,300000,300000,300000,300000,300000,0]),
-  ...makeCon(2,  [250000,250000,250000,250000,250000,250000,250000,250000,250000,250000,250000,250000,250000,250000,250000,250000,250000,0]),
-  ...makeCon(3,  [100000,100000,100000,100000,50000, 100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,0]),
-  ...makeCon(4,  [50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 0,     0,     0,     0,     0,     0]),
-  ...makeCon(5,  [100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,200000,200000,200000,200000,200000,200000,0]),
-  ...makeCon(6,  [110000,110000,50000, 50000, 50000, 90000, 90000, 90000, 90000, 90000, 100000,100000,100000,100000,50000, 50000, 50000, 0]),
-  ...makeCon(7,  [100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,0]),
-  ...makeCon(8,  [50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 0]),
-  ...makeCon(9,  [30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 0]),
-  ...makeCon(10, [100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,0]),
-  ...makeCon(11, [50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 0]),
-  ...makeCon(12, [100000,100000,100000,100000,100000,100000,100000,100000,50000, 50000, 50000, 50000, 100000,100000,100000,100000,100000,0]),
-  ...makeCon(13, [30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 0]),
-  ...makeCon(14, [50000, 50000, 50000, 50000, 100000,150000,100000,100000,100000,50000, 50000, 100000,50000, 100000,100000,50000, 50000, 0]),
-  ...makeCon(15, [50000, 50000, 100000,100000,100000,100000,100000,50000, 50000, 50000, 50000, 50000, 50000, 50000, 0,     0,     0,     0]),
-  ...makeCon(16, [0,     0,     30000, 30000, 30000, 50000, 30000, 30000, 30000, 30000, 30000, 0,     30000, 50000, 50000, 0,     50000, 0]),
-  ...makeCon(17, [0,     0,     30000, 30000, 30000, 30000, 30000, 30000, 30000, 0,     0,     0,     0,     0,     0,     0,     0,     0]),
-  ...makeCon(18, [0,     0,     0,     0,     0,     30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 0,     0,     0,     0]),
-  ...makeCon(19, [0,     0,     0,     0,     0,     0,     100000,100000,100000,0,     0,     0,     0,     0,     0,     0,     0,     0]),
-  ...makeCon(20, [0,     0,     0,     0,     0,     0,     30000, 30000, 30000, 0,     50000, 30000, 30000, 0,     0,     0,     0,     0]),
-  ...makeCon(21, [0,     0,     0,     0,     0,     0,     0,     50000, 0,     0,     0,     0,     0,     0,     0,     0,     0,     0]),
-  ...makeCon(22, [0,     0,     0,     0,     0,     0,     0,     0,     0,     50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 0]),
-  ...makeCon(23, [0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     50000, 50000, 50000, 0]),
-  ...makeCon(24, [30000, 0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0]),
-  ...makeCon(25, [30000, 30000, 0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0]),
-  ...makeCon(27, [100000,100000,0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0]),
-  ...makeCon(28, [50000, 50000, 0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0]),
-];
-
-const CERT_IMG = "";
-
-const SK_D = "dh_donors_v4";
-const SK_C = "dh_contribs_v4";
-const SK_P = "dh_photos_v1";
+// Admin Panel တွင် တိုက်ရိုက်ပြင်ဆင်ရန် Google Sheets လင့်ခ် (Edit Link)
+const sheetEditUrl = 'https://docs.google.com/spreadsheets/d/1LpTBZvw43V7EqiWmMYukhOXf2KImMG-vGGidSmgyjR8/edit?pli=1&gid=0#gid=0';
 
 function pKey(donorId, year, month) { return donorId + "-" + year + "-" + month; }
-
-function toDirectUrl(url) {
-  if (!url) return url;
-  const m1 = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-  if (m1) return "https://drive.google.com/uc?export=view&id=" + m1[1];
-  const m2 = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
-  if (m2) return "https://drive.google.com/uc?export=view&id=" + m2[1];
-  return url;
-}
-
-function loadState() {
-  try {
-    const d = JSON.parse(localStorage.getItem(SK_D));
-    const c = JSON.parse(localStorage.getItem(SK_C));
-    const p = JSON.parse(localStorage.getItem(SK_P));
-    return { donors: d || SEED_DONORS, contribs: c || SEED_CONTRIBS, photos: p || {} };
-  } catch(e) {
-    return { donors: SEED_DONORS, contribs: SEED_CONTRIBS, photos: {} };
-  }
-}
-function saveAll(d, c, p) {
-  try {
-    localStorage.setItem(SK_D, JSON.stringify(d));
-    localStorage.setItem(SK_C, JSON.stringify(c));
-    localStorage.setItem(SK_P, JSON.stringify(p));
-  } catch(e) {}
-}
 
 function dlImage(url, name) {
   const a = document.createElement("a");
@@ -159,19 +51,55 @@ function dlImage(url, name) {
 }
 
 function App() {
-  const init = loadState();
-  const [donors, setDonors] = useState(init.donors);
-  const [contribs, setContribs] = useState(init.contribs);
-  const [photos, setPhotos] = useState(init.photos);
+  const [donors, setDonors] = useState([]);
+  const [contribs, setContribs] = useState([]);
+  const [photos, setPhotos] = useState({});
+  const [loading, setLoading] = useState(true);
+  
   const [page, setPage] = useState("dashboard");
   const [selDonor, setSelDonor] = useState(null);
-  const [adminOk, setAdminOk] = useState(false);
-  const [adminPw, setAdminPw] = useState("");
-  const [adminErr, setAdminErr] = useState(false);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
 
-  useEffect(function() { saveAll(donors, contribs, photos); }, [donors, contribs, photos]);
+  // Admin Login States
+  const [adminOk, setAdminOk] = useState(false);
+  const [adminPw, setAdminPw] = useState("");
+  const [adminErr, setAdminErr] = useState(false);
+
+  useEffect(function() {
+    fetch(sheetUrl)
+      .then(function(res) { return res.text(); })
+      .then(function(csvData) {
+        const rows = csvData.split('\n');
+        const newDonors = [];
+        const newContribs = [];
+        
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i].trim();
+            if (!row) continue;
+            
+            const cols = row.split(',');
+            if (cols.length >= 3) {
+                const id = parseInt(cols[0]) || i;
+                const name = cols[1];
+                const amount = parseInt(cols[2].replace(/,/g, '')) || 0;
+                
+                newDonors.push({ id: id, name: name, active: true });
+                if(amount > 0) {
+                    newContribs.push({ donorId: id, year: 2026, month: 4, amount: amount });
+                }
+            }
+        }
+        setDonors(newDonors);
+        setContribs(newContribs);
+        setLoading(false);
+      })
+      .catch(function(err) {
+        console.error(err);
+        setLoading(false);
+        showToast("Error loading data from Google Sheets", true);
+      });
+  }, []);
 
   function showToast(msg, isErr) {
     setToast({ msg, isErr: !!isErr });
@@ -188,44 +116,17 @@ function App() {
     return Object.values(totals).reduce(function(a,b){ return a+b; }, 0);
   }, [totals]);
 
-  function addDonor(name) {
-    const id = Math.max(0, ...donors.map(function(d){return d.id;})) + 1;
-    setDonors([...donors, { id, name, active: true }]);
-    showToast("Added");
-  }
-  function delDonor(id) {
-    setDonors(donors.filter(function(d){return d.id!==id;}));
-    setContribs(contribs.filter(function(c){return c.donorId!==id;}));
-    showToast("Deleted", true);
-  }
-  function toggleActive(id) {
-    setDonors(donors.map(function(d){return d.id===id?{...d,active:!d.active}:d;}));
-  }
-  function upsert(donorId, year, month, amount) {
-    const ex = contribs.find(function(c){return c.donorId===donorId&&c.year===year&&c.month===month;});
-    if (ex) {
-      setContribs(contribs.map(function(c){return c.donorId===donorId&&c.year===year&&c.month===month?{...c,amount}:c;}));
+  function tryLogin() {
+    if (adminPw === "zayyar@100") {
+      setAdminOk(true);
+      setAdminErr(false);
     } else {
-      setContribs([...contribs, {donorId,year,month,amount}]);
+      setAdminErr(true);
     }
-    showToast("Saved");
   }
-  function delContrib(donorId, year, month) {
-    setContribs(contribs.filter(function(c){return !(c.donorId===donorId&&c.year===year&&c.month===month);}));
-    showToast("Deleted", true);
-  }
-  function setPhoto(donorId, year, month, url) {
-    const k = pKey(donorId, year, month);
-    const np = { ...photos };
-    if (url) np[k] = url; else delete np[k];
-    setPhotos(np);
-    showToast(url ? "Photo saved" : "Photo deleted", !url);
-  }
-  function resetToSeed() {
-    setDonors(SEED_DONORS);
-    setContribs(SEED_CONTRIBS);
-    setPhotos({});
-    showToast("Reset done");
+
+  if (loading) {
+    return <div className="loading-screen">Loading Data...</div>;
   }
 
   const filtered = donors.filter(function(d){return d.name.toLowerCase().includes(search.toLowerCase());});
@@ -251,9 +152,9 @@ function App() {
         {toast&&<div style={{...S.toast,background:toast.isErr?"#ef4444":"#22c55e"}}>{toast.msg}</div>}
         {page==="dashboard"&&<Dashboard donors={donors} totals={totals} grand={grand} contribs={contribs} goDetail={function(d){setSelDonor(d);setPage("detail");}} />}
         {page==="donors"&&<DonorList donors={filtered} totals={totals} search={search} setSearch={setSearch} goDetail={function(d){setSelDonor(d);setPage("detail");}} />}
-        {page==="detail"&&selDonor&&<Detail donor={selDonor} contribs={contribs} photos={photos} upsert={upsert} del={delContrib} back={function(){setPage("donors");}} adminOk={adminOk} setPhoto={setPhoto} />}
+        {page==="detail"&&selDonor&&<Detail donor={selDonor} contribs={contribs} photos={photos} back={function(){setPage("donors");}} />}
         {page==="reports"&&<Reports donors={donors} contribs={contribs} totals={totals} grand={grand} />}
-        {page==="admin"&&<Admin donors={donors} contribs={contribs} photos={photos} totals={totals} adminOk={adminOk} adminPw={adminPw} adminErr={adminErr} setAdminPw={setAdminPw} tryLogin={function(){if(adminPw==="zayyar@100"){setAdminOk(true);setAdminErr(false);}else setAdminErr(true);}} addDonor={addDonor} delDonor={delDonor} toggleActive={toggleActive} upsert={upsert} delContrib={delContrib} setPhoto={setPhoto} resetToSeed={resetToSeed} />}
+        {page==="admin"&&<Admin adminOk={adminOk} adminPw={adminPw} adminErr={adminErr} setAdminPw={setAdminPw} tryLogin={tryLogin} />}
       </main>
     </div>
   );
@@ -262,33 +163,16 @@ function App() {
 function Dashboard({ donors, totals, grand, contribs, goDetail }) {
   const active = donors.filter(function(d){return d.active;}).length;
   const top5 = [...donors].sort(function(a,b){return (totals[b.id]||0)-(totals[a.id]||0);}).slice(0,5);
-  const mm = {};
-  for (const c of contribs) { const k=c.year+"-"+String(c.month).padStart(2,"0"); mm[k]=(mm[k]||0)+c.amount; }
-  const ents = Object.entries(mm).sort(function(a,b){return a[0]<b[0]?-1:1;});
-  const maxV = Math.max(...ents.map(function(e){return e[1];}),1);
+  
   return (
     <div style={S.page}>
       <h1 style={S.h1}>Dashboard</h1>
       <div style={S.row3}>
-        {[[fmt(grand),"Total","#6366f1"],[active+" Donors","Members","#f59e0b"],[ents.length+" Months","Period","#10b981"]].map(function(x){
+        {[[fmt(grand),"Total","#6366f1"],[active+" Donors","Members","#f59e0b"]].map(function(x){
           return <div key={x[1]} style={S.stat}><div style={{...S.statV,color:x[2]}}>{x[0]}</div><div style={S.statL}>{x[1]}</div></div>;
         })}
       </div>
-      <div style={S.card}>
-        <div style={S.cardH}>Monthly Contributions</div>
-        <div style={{display:"flex",alignItems:"flex-end",gap:6,height:130,overflowX:"auto",paddingBottom:4}}>
-          {ents.map(function(e){
-            const k=e[0],v=e[1],parts=k.split("-"),yr=parts[0],mo=parseInt(parts[1]),h=Math.max(6,Math.round((v/maxV)*100));
-            return (
-              <div key={k} style={{display:"flex",flexDirection:"column",alignItems:"center",minWidth:38}}>
-                <div style={{fontSize:9,color:"#6366f1",marginBottom:2}}>{Math.round(v/1000)}k</div>
-                <div style={{width:26,height:h,background:"linear-gradient(180deg,#818cf8,#4f46e5)",borderRadius:"4px 4px 0 0"}} />
-                <div style={{fontSize:9,color:"#94a3b8",marginTop:2,textAlign:"center"}}>{MN[mo-1]}<br />{yr}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      
       <div style={S.card}>
         <div style={S.cardH}>Top 5 Donors</div>
         {top5.map(function(d,i){
@@ -319,7 +203,7 @@ function DonorList({ donors, totals, search, setSearch, goDetail }) {
                 <span style={{...S.badge,background:d.active?"#dcfce7":"#f1f5f9",color:d.active?"#16a34a":"#64748b"}}>{d.active?"active":"off"}</span>
               </div>
               <div style={{fontSize:17,fontWeight:800,color:"#6366f1"}}>{fmt(totals[d.id]||0)}</div>
-              <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Total</div>
+              <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>Total Paid</div>
             </div>
           );
         })}
@@ -328,27 +212,10 @@ function DonorList({ donors, totals, search, setSearch, goDetail }) {
   );
 }
 
-function Detail({ donor, contribs, photos, upsert, del, back, adminOk, setPhoto }) {
-  const mine = contribs.filter(function(c){return c.donorId===donor.id;})
-    .sort(function(a,b){return a.year!==b.year?a.year-b.year:a.month-b.month;});
+function Detail({ donor, contribs, photos, back }) {
+  const mine = contribs.filter(function(c){return c.donorId===donor.id;});
   const total = mine.reduce(function(s,c){return s+c.amount;},0);
-  const avg = mine.length?Math.round(total/mine.length):0;
-
-  const [yr,setYr] = useState(2026);
-  const [mo,setMo] = useState(new Date().getMonth()+1);
-  const [amt,setAmt] = useState("");
-  const [editK,setEditK] = useState(null);
-  const [editA,setEditA] = useState("");
-  const [editPK,setEditPK] = useState(null);
-  const [editPUrl,setEditPUrl] = useState("");
   const [lightbox,setLightbox] = useState(null);
-
-  function doAdd() {
-    const a = parseInt(String(amt).replace(/,/g,""));
-    if (!a||a<=0) return;
-    upsert(donor.id,Number(yr),Number(mo),a);
-    setAmt("");
-  }
 
   return (
     <div style={S.page}>
@@ -370,90 +237,24 @@ function Detail({ donor, contribs, photos, upsert, del, back, adminOk, setPhoto 
         <span style={{...S.badge,background:"#dcfce7",color:"#16a34a"}}>{donor.active?"Active":"Inactive"}</span>
       </div>
       <div style={S.row3}>
-        {[[fmt(total),"Total"],[fmt(avg),"Avg/Month"],[mine.length+" Months","Period"]].map(function(x){
-          return <div key={x[1]} style={{...S.stat,flex:1}}><div style={{...S.statV,fontSize:16,color:"#6366f1"}}>{x[0]}</div><div style={S.statL}>{x[1]}</div></div>;
-        })}
+        <div style={{...S.stat,flex:1}}><div style={{...S.statV,fontSize:16,color:"#6366f1"}}>{fmt(total)}</div><div style={S.statL}>Total Paid</div></div>
       </div>
-      {adminOk&&<div style={S.card}>
-        <div style={S.cardH}>Add Contribution</div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          <select style={S.sel} value={yr} onChange={function(e){setYr(e.target.value);}}>
-            {[2024,2025,2026,2027].map(function(y){return <option key={y}>{y}</option>;})}
-          </select>
-          <select style={S.sel} value={mo} onChange={function(e){setMo(e.target.value);}}>
-            {MN.map(function(m,i){return <option key={i} value={i+1}>{m}</option>;})}
-          </select>
-          <input style={{...S.sel,flex:1,minWidth:110}} placeholder="Amount (MMK)" value={amt}
-            onChange={function(e){setAmt(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")doAdd();}} />
-          <button style={S.btnP} onClick={doAdd}>Add</button>
-        </div>
-      </div>}
+      
       <div style={S.card}>
-        <div style={S.cardH}>Monthly Records</div>
+        <div style={S.cardH}>Records</div>
         {mine.length===0?(
           <div style={{color:"#94a3b8",textAlign:"center",padding:20}}>No records yet</div>
         ):(
           <div>
-            {mine.map(function(c){
-              const k=c.year+"-"+c.month;
-              const pk=pKey(donor.id,c.year,c.month);
-              const photoUrl=photos[pk];
-              const isEP=editPK===k;
+            {mine.map(function(c, idx){
               return (
-                <div key={k} style={S.monthRow}>
+                <div key={idx} style={S.monthRow}>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                      <span style={{fontWeight:700,color:"#334155",minWidth:80}}>{MN[c.month-1]} {c.year}</span>
-                      {editK===k?(
-                        <span style={{display:"flex",gap:6,alignItems:"center"}}>
-                          <input style={{...S.sel,width:110}} value={editA} autoFocus
-                            onChange={function(e){setEditA(e.target.value);}}
-                            onKeyDown={function(e){if(e.key==="Enter"){upsert(donor.id,c.year,c.month,parseInt(editA.replace(/,/g,"")));setEditK(null);}}} />
-                          <button style={S.btnS} onClick={function(){upsert(donor.id,c.year,c.month,parseInt(editA.replace(/,/g,"")));setEditK(null);}}>OK</button>
-                          <button style={S.btnS} onClick={function(){setEditK(null);}}>X</button>
-                        </span>
-                      ):(
-                        <span style={{fontWeight:800,color:"#6366f1",fontSize:15}}>{fmt(c.amount)}</span>
-                      )}
-                      <span style={{display:"flex",gap:5,marginLeft:"auto"}}>
-                        {adminOk&&editK!==k&&<button style={S.btnS} onClick={function(){setEditK(k);setEditA(String(c.amount));}}>Edit</button>}
-                        {adminOk&&<button style={{...S.btnS,background:"#fee2e2",color:"#dc2626"}} onClick={function(){del(donor.id,c.year,c.month);}}>Del</button>}
-                      </span>
+                      <span style={{fontWeight:700,color:"#334155",minWidth:80}}>Total Record</span>
+                      <span style={{fontWeight:800,color:"#6366f1",fontSize:15}}>{fmt(c.amount)}</span>
                     </div>
-                    {adminOk&&isEP&&(
-                      <div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
-                        <label style={{...S.btnP,cursor:"pointer",fontSize:12,padding:"7px 14px"}}>
-                          Choose Photo
-                          <input type="file" accept="image/*" style={{display:"none"}} onChange={function(e){
-                            const f=e.target.files[0];if(!f)return;
-                            const r=new FileReader();
-                            r.onload=function(ev){
-                              setPhoto(donor.id,c.year,c.month,ev.target.result);
-                              setEditPK(null);
-                            };
-                            r.readAsDataURL(f);
-                          }} />
-                        </label>
-                        {photoUrl&&<button style={{...S.btnS,background:"#fee2e2",color:"#dc2626"}} onClick={function(){setPhoto(donor.id,c.year,c.month,"");setEditPK(null);}}>Remove</button>}
-                        <button style={S.btnS} onClick={function(){setEditPK(null);}}>Cancel</button>
-                      </div>
-                    )}
-                    {adminOk&&!isEP&&(
-                      <button style={{...S.btnS,marginTop:6,fontSize:11}} onClick={function(){setEditPK(k);setEditPUrl("");}}>
-                        {photoUrl?"Edit photo":"+ Add photo"}
-                      </button>
-                    )}
                   </div>
-                  {photoUrl&&(
-                    <div style={{flexShrink:0,marginLeft:12,display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-                      <img src={photoUrl} alt="cert"
-                        style={{width:80,height:80,objectFit:"cover",borderRadius:10,cursor:"pointer",border:"2px solid #6366f1",boxShadow:"0 2px 8px rgba(99,102,241,.2)"}}
-                        onClick={function(){setLightbox(photoUrl);}} />
-                      <button style={{...S.btnS,fontSize:10,padding:"3px 8px"}} onClick={function(){dlImage(photoUrl,donor.name+"-"+MN[c.month-1]+c.year+".jpg");}}>
-                        Download
-                      </button>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -465,41 +266,25 @@ function Detail({ donor, contribs, photos, upsert, del, back, adminOk, setPhoto 
 }
 
 function Reports({ donors, contribs, totals, grand }) {
-  const [fy,setFy] = useState("all");
-  const [fm,setFm] = useState("all");
-  const years = [...new Set(contribs.map(function(c){return c.year;}))].sort();
-  const filtered = contribs.filter(function(c){
-    if(fy!=="all"&&c.year!==Number(fy))return false;
-    if(fm!=="all"&&c.month!==Number(fm))return false;
-    return true;
-  });
-  const bd={};
-  for(const c of filtered) bd[c.donorId]=(bd[c.donorId]||0)+c.amount;
-  const rows=donors.map(function(d){return{...d,t:bd[d.id]||0};}).filter(function(d){return d.t>0;}).sort(function(a,b){return b.t-a.t;});
+  const rows=donors.map(function(d){return{...d,t:(totals[d.id]||0)};}).filter(function(d){return d.t>0;}).sort(function(a,b){return b.t-a.t;});
   const ft=rows.reduce(function(s,d){return s+d.t;},0);
+  
   function dlCSV(){
     const body=rows.map(function(d,i){return(i+1)+","+d.name+","+d.t;}).join("\n");
     const a=document.createElement("a");
     a.href=URL.createObjectURL(new Blob(["No,Name,Total (MMK)\n"+body],{type:"text/csv"}));
     a.download="donors-report.csv";a.click();
   }
+  
   return (
     <div style={S.page}>
       <h1 style={S.h1}>Reports</h1>
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
-        <select style={S.sel} value={fy} onChange={function(e){setFy(e.target.value);}}>
-          <option value="all">All Years</option>
-          {years.map(function(y){return <option key={y} value={y}>{y}</option>;})}
-        </select>
-        <select style={S.sel} value={fm} onChange={function(e){setFm(e.target.value);}}>
-          <option value="all">All Months</option>
-          {MN.map(function(m,i){return <option key={i} value={i+1}>{m}</option>;})}
-        </select>
         <button style={S.btnP} onClick={dlCSV}>Download CSV</button>
       </div>
       <div style={{...S.stat,marginBottom:16}}>
         <div style={{...S.statV,color:"#6366f1"}}>{fmt(ft)}</div>
-        <div style={S.statL}>Filtered Total</div>
+        <div style={S.statL}>Total Amount</div>
       </div>
       <div style={S.card}>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
@@ -515,16 +300,7 @@ function Reports({ donors, contribs, totals, grand }) {
   );
 }
 
-function Admin({ donors, contribs, photos, totals, adminOk, adminPw, adminErr, setAdminPw, tryLogin, addDonor, delDonor, toggleActive, upsert, delContrib, setPhoto, resetToSeed }) {
-  const [newName,setNewName] = useState("");
-  const [confirmDel,setConfirmDel] = useState(null);
-  const [tab,setTab] = useState("donors");
-  const [selId,setSelId] = useState(null);
-  const [yr,setYr] = useState(2026);
-  const [mo,setMo] = useState(new Date().getMonth()+1);
-  const [amt,setAmt] = useState("");
-  const [pUrl,setPUrl] = useState("");
-
+function Admin({ adminOk, adminPw, adminErr, setAdminPw, tryLogin }) {
   if (!adminOk) {
     return (
       <div style={{maxWidth:340,margin:"60px auto",padding:20}}>
@@ -541,178 +317,15 @@ function Admin({ donors, contribs, photos, totals, adminOk, adminPw, adminErr, s
     );
   }
 
-  const selContribs = selId
-    ? contribs.filter(function(c){return c.donorId===selId;}).sort(function(a,b){return a.year!==b.year?a.year-b.year:a.month-b.month;})
-    : [];
-
   return (
     <div style={S.page}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <h1 style={{...S.h1,margin:0}}>Admin Panel</h1>
-        <button style={{...S.btnS,background:"#fef3c7",color:"#92400e"}}
-          onClick={function(){ if(window.confirm("Reset all data to seed?")) resetToSeed(); }}>
-          Reset
-        </button>
+      <h1 style={{...S.h1,marginBottom:20}}>Admin Panel</h1>
+      <p style={{color:"#64748b", marginBottom: 20}}>
+        ဤနေရာမှနေ၍ အလှူရှင်စာရင်းများကို တိုက်ရိုက် ထည့်သွင်း/ပြင်ဆင် နိုင်ပါသည်။ ပြင်ဆင်ပြီးသည်နှင့် ဝဘ်ဆိုဒ်တွင် အလိုအလျောက် Update ဖြစ်ပါမည်။
+      </p>
+      <div style={{...S.card, padding: 0, overflow: 'hidden'}}>
+         <iframe src={sheetEditUrl} style={{width: "100%", height: "70vh", border: "none"}}></iframe>
       </div>
-      <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
-        {[["donors","Donors"],["contrib","Contributions"],["photo","Photos"],["csv","CSV"]].map(function(x){
-          return <button key={x[0]} style={{...S.btnS,...(tab===x[0]?{background:"#6366f1",color:"#fff"}:{})}} onClick={function(){setTab(x[0]);}}>{x[1]}</button>;
-        })}
-      </div>
-
-      {tab==="donors"&&(
-        <div>
-          <div style={S.card}>
-            <div style={S.cardH}>Add Donor</div>
-            <div style={{display:"flex",gap:8}}>
-              <input style={{...S.input,margin:0,flex:1}} placeholder="Name" value={newName}
-                onChange={function(e){setNewName(e.target.value);}}
-                onKeyDown={function(e){if(e.key==="Enter"&&newName.trim()){addDonor(newName.trim());setNewName("");}}} />
-              <button style={S.btnP} onClick={function(){if(newName.trim()){addDonor(newName.trim());setNewName("");}}}>Add</button>
-            </div>
-          </div>
-          <div style={S.card}>
-            <div style={S.cardH}>{"Donor List ("+donors.length+")"}</div>
-            {donors.map(function(d){
-              return (
-                <div key={d.id} style={{...S.topRow,alignItems:"center"}}>
-                  <span style={{flex:1}}>{d.name}</span>
-                  <span style={{color:"#6366f1",fontSize:12,marginRight:8}}>{fmt(totals[d.id]||0)}</span>
-                  <button style={{...S.btnS,marginRight:5,background:d.active?"#dcfce7":"#f1f5f9",color:d.active?"#16a34a":"#64748b"}} onClick={function(){toggleActive(d.id);}}>{d.active?"On":"Off"}</button>
-                  <button style={{...S.btnS,background:"#fee2e2",color:"#dc2626"}} onClick={function(){setConfirmDel(d.id);}}>Del</button>
-                  {confirmDel===d.id&&(
-                    <span style={{marginLeft:6,display:"flex",gap:4}}>
-                      <button style={{...S.btnS,background:"#dc2626",color:"#fff"}} onClick={function(){delDonor(d.id);setConfirmDel(null);}}>OK</button>
-                      <button style={S.btnS} onClick={function(){setConfirmDel(null);}}>No</button>
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {tab==="contrib"&&(
-        <div style={S.card}>
-          <div style={S.cardH}>Add / Edit Contribution</div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-            <select style={S.sel} value={selId||""} onChange={function(e){setSelId(Number(e.target.value)||null);}}>
-              <option value="">Select donor</option>
-              {donors.map(function(d){return <option key={d.id} value={d.id}>{d.name}</option>;})}
-            </select>
-            <select style={S.sel} value={yr} onChange={function(e){setYr(e.target.value);}}>
-              {[2024,2025,2026,2027].map(function(y){return <option key={y}>{y}</option>;})}
-            </select>
-            <select style={S.sel} value={mo} onChange={function(e){setMo(e.target.value);}}>
-              {MN.map(function(m,i){return <option key={i} value={i+1}>{m}</option>;})}
-            </select>
-            <input style={{...S.sel,minWidth:110}} placeholder="Amount" value={amt} onChange={function(e){setAmt(e.target.value);}} />
-            <button style={S.btnP} onClick={function(){if(!selId||!amt)return;upsert(selId,Number(yr),Number(mo),parseInt(String(amt).replace(/,/g,"")));setAmt("");}}>Save</button>
-          </div>
-          {selId&&selContribs.map(function(c){
-            return (
-              <div key={c.year+"-"+c.month} style={S.topRow}>
-                <span style={{flex:1}}>{MN[c.month-1]} {c.year}</span>
-                <span style={{color:"#6366f1",fontWeight:600,marginRight:8}}>{fmt(c.amount)}</span>
-                <button style={{...S.btnS,background:"#fee2e2",color:"#dc2626"}} onClick={function(){delContrib(selId,c.year,c.month);}}>Del</button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {tab==="photo"&&(
-        <div style={S.card}>
-          <div style={S.cardH}>Certificate Photo Upload</div>
-          <p style={{color:"#64748b",fontSize:13,marginBottom:12}}>
-            အလှူရှင် နှင့် လ ရွေးပြီး ဓာတ်ပုံ တင်ပါ
-          </p>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-            <select style={S.sel} value={selId||""} onChange={function(e){setSelId(Number(e.target.value)||null);}}>
-              <option value="">Select donor</option>
-              {donors.map(function(d){return <option key={d.id} value={d.id}>{d.name}</option>;})}
-            </select>
-            <select style={S.sel} value={yr} onChange={function(e){setYr(e.target.value);}}>
-              {[2024,2025,2026,2027].map(function(y){return <option key={y}>{y}</option>;})}
-            </select>
-            <select style={S.sel} value={mo} onChange={function(e){setMo(e.target.value);}}>
-              {MN.map(function(m,i){return <option key={i} value={i+1}>{m}</option>;})}
-            </select>
-          </div>
-
-          {selId&&(
-            <div>
-              {photos[pKey(selId,Number(yr),Number(mo))]&&(
-                <div style={{marginBottom:12}}>
-                  <div style={{fontSize:12,color:"#64748b",marginBottom:6}}>Current photo:</div>
-                  <img src={photos[pKey(selId,Number(yr),Number(mo))]} alt="current"
-                    style={{maxWidth:200,maxHeight:160,borderRadius:10,border:"2px solid #6366f1",objectFit:"cover",display:"block",marginBottom:8}} />
-                  <button style={{...S.btnS,background:"#fee2e2",color:"#dc2626"}} onClick={function(){setPhoto(selId,Number(yr),Number(mo),"");setPUrl("");}}>Remove Photo</button>
-                </div>
-              )}
-              <label style={{display:"inline-flex",alignItems:"center",gap:8,...S.btnP,cursor:"pointer",fontSize:13}}>
-                {photos[pKey(selId,Number(yr),Number(mo))]?"Replace Photo":"Upload Photo"}
-                <input type="file" accept="image/*" style={{display:"none"}} onChange={function(e){
-                  const f=e.target.files[0];if(!f)return;
-                  const r=new FileReader();
-                  r.onload=function(ev){
-                    setPhoto(selId,Number(yr),Number(mo),ev.target.result);
-                  };
-                  r.readAsDataURL(f);
-                }} />
-              </label>
-            </div>
-          )}
-
-          {selId&&(
-            <div style={{marginTop:20}}>
-              <div style={{fontSize:13,fontWeight:700,color:"#334155",marginBottom:10}}>All Photos</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
-                {selContribs.map(function(c){
-                  const pk=pKey(selId,c.year,c.month),pu=photos[pk];
-                  return (
-                    <div key={pk} style={{textAlign:"center"}}>
-                      {pu?(
-                        <img src={pu} alt={MN[c.month-1]} style={{width:70,height:70,objectFit:"cover",borderRadius:8,border:"2px solid #6366f1",cursor:"pointer"}}
-                          onClick={function(){dlImage(pu,MN[c.month-1]+c.year+".jpg");}} />
-                      ):(
-                        <div style={{width:70,height:70,borderRadius:8,background:"#f1f5f9",display:"flex",alignItems:"center",justifyContent:"center",color:"#cbd5e1",fontSize:20}}>+</div>
-                      )}
-                      <div style={{fontSize:10,color:"#64748b",marginTop:3}}>{MN[c.month-1]} {c.year}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab==="csv"&&(
-        <div style={S.card}>
-          <div style={S.cardH}>CSV Import</div>
-          <p style={{color:"#64748b",fontSize:13}}>Format: No,Name,Total Paid</p>
-          <input type="file" accept=".csv" onChange={function(e){
-            const f=e.target.files[0];if(!f)return;
-            const r=new FileReader();
-            r.onload=function(ev){
-              const lines=ev.target.result.trim().split("\n").slice(1);
-              const nd=[...donors];let added=0;
-              lines.forEach(function(line){
-                const parts=line.split(","),name=parts[1]&&parts[1].trim();
-                if(!name)return;
-                if(!nd.find(function(d){return d.name===name;})){
-                  nd.push({id:Math.max(0,...nd.map(function(d){return d.id;}))+1,name,active:true});added++;
-                }
-              });
-              // Note: setDonors not available here, handle via prop if needed
-              alert(added+" donors would be added (reload to apply via seed)");
-            };
-            r.readAsText(f,"UTF-8");
-          }} />
-        </div>
-      )}
     </div>
   );
 }
