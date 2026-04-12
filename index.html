@@ -26,7 +26,6 @@
   const { useState, useEffect, useMemo } = React;
   const fmt = (n) => (n || 0).toLocaleString() + " MMK";
 
-  // Google Sheets Links
   const sheetUrl = 'https://docs.google.com/spreadsheets/d/1LpTBZvw43V7EqiWmMYukhOXf2KImMG-vGGidSmgyjR8/export?format=csv';
   const sheetEditUrl = 'https://docs.google.com/spreadsheets/d/1LpTBZvw43V7EqiWmMYukhOXf2KImMG-vGGidSmgyjR8/edit?pli=1&gid=0#gid=0';
 
@@ -42,7 +41,6 @@
     const [adminErr, setAdminErr] = useState(false);
 
     useEffect(() => {
-      // Data အသစ် ချက်ချင်းပေါ်စေရန် Cache ဖျက်သည့်စနစ်
       fetch(sheetUrl + '&t=' + new Date().getTime())
         .then(res => { if(!res.ok) throw new Error("Net Err"); return res.text(); })
         .then(csvData => {
