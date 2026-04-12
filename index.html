@@ -34,7 +34,6 @@ const { useState, useEffect, useMemo } = React;
 const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fmt = (n) => (n || 0).toLocaleString() + " MMK";
 
-// ဖိုင်တစ်ခုတည်းကိုသာ ညွှန်းထားသော လင့်ခ်များ
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/1LpTBZvw43V7EqiWmMYukhOXf2KImMG-vGGidSmgyjR8/export?format=csv';
 const sheetEditUrl = 'https://docs.google.com/spreadsheets/d/1LpTBZvw43V7EqiWmMYukhOXf2KImMG-vGGidSmgyjR8/edit?pli=1&gid=0#gid=0';
 
@@ -47,8 +46,7 @@ function dlImage(url, name) {
   a.target = "_blank";
   a.click();
 }
-
-function App() {
+    function App() {
   const [donors, setDonors] = useState([]);
   const [contribs, setContribs] = useState([]);
   const [photos, setPhotos] = useState({});
@@ -116,7 +114,6 @@ function App() {
     return Object.values(totals).reduce(function(a,b){ return a+b; }, 0);
   }, [totals]);
 
-  // Space များ အလိုအလျောက် ဝင်နေပါက ဖြတ်ထုတ်ပေးမည့်စနစ် (trim)
   function tryLogin() {
     if (adminPw.trim() === "zayyar@100") {
       setAdminOk(true);
@@ -288,4 +285,88 @@ function Reports({ donors, contribs, totals, grand }) {
         <div style={S.statL}>Total Amount</div>
       </div>
       <div style={S.card}>
-  
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr style={{background:"#f8fafc"}}><th style={S.th}>#</th><th style={S.th}>Name</th><th style={S.th}>Amount</th></tr></thead>
+          <tbody>
+            {rows.map(function(d,i){
+              return <tr key={d.id} style={{borderBottom:"1px solid #f1f5f9"}}><td style={S.td}>{i+1}</td><td style={S.td}>{d.name}</td><td style={{...S.td,color:"#6366f1",fontWeight:700}}>{fmt(d.t)}</td></tr>;
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function Admin({ adminOk, adminPw, adminErr, setAdminPw, tryLogin }) {
+  if (!adminOk) {
+    return (
+      <div style={{maxWidth:340,margin:"60px auto",padding:20}}>
+        <div style={S.card}>
+          <h2 style={{textAlign:"center",marginBottom:20}}>Admin Login</h2>
+          <input style={S.input} type="password" placeholder="Password" value={adminPw}
+            onChange={function(e){setAdminPw(e.target.value);}}
+            onKeyDown={function(e){if(e.key==="Enter")tryLogin();}} />
+          {adminErr&&<div style={{color:"#ef4444",fontSize:13}}>Wrong password</div>}
+          <button style={{...S.btnP,width:"100%",marginTop:10}} onClick={tryLogin}>Login</button>
+          <div style={{fontSize:11,color:"#94a3b8",textAlign:"center",marginTop:8}}>Admin access only</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={S.page}>
+      <h1 style={{...S.h1,marginBottom:20}}>Admin Panel</h1>
+      
+      <div style={{...S.card, textAlign: "center", padding: "40px 20px"}}>
+         <h3 style={{color: "#334155", marginBottom: 15, fontSize: 18}}>Google Sheets သို့ သွားရန်</h3>
+         <p style={{color: "#64748b", fontSize: 14, marginBottom: 25, lineHeight: 1.6}}>
+            အလှူရှင်စာရင်းများ ထပ်မံထည့်သွင်းရန် သို့မဟုတ် ပြင်ဆင်ရန် အောက်ပါခလုတ်ကို နှိပ်ပါ။ <br/>(ခလုတ်နှိပ်ပါက Google Sheets သို့ တိုက်ရိုက်ရောက်ရှိသွားပါမည်။)
+         </p>
+         <a href={sheetEditUrl} target="_blank" rel="noopener noreferrer" style={{...S.btnP, display: "inline-block", textDecoration: "none", fontSize: 15, padding: "12px 24px"}}>
+            Google Sheets ဖွင့်ရန် 📝
+         </a>
+      </div>
+    </div>
+  );
+}
+
+const S = {
+  root:     {display:"flex",minHeight:"100vh",background:"#f8fafc",fontFamily:"'Noto Sans Myanmar','Segoe UI',sans-serif"},
+  sidebar:  {width:190,background:"#1e1b4b",display:"flex",flexDirection:"column",padding:"20px 0",gap:2,flexShrink:0},
+  logo:     {display:"flex",alignItems:"center",gap:8,padding:"0 16px 20px",borderBottom:"1px solid #312e81"},
+  logoTxt:  {color:"#c7  logoTxt:  {color:"#c7d2fe",fontWeight:700,fontSize:16},
+  navBtn:   {display:"flex",alignItems:"center",gap:10,padding:"11px 16px",background:"transparent",border:"none",color:"#a5b4fc",fontSize:14,cursor:"pointer"},
+  navActive:{background:"#312e81",color:"#fff",borderLeft:"3px solid #818cf8"},
+  main:     {flex:1,overflow:"auto",position:"relative"},
+  page:     {maxWidth:900,margin:"0 auto",padding:"28px 20px"},
+  h1:       {fontSize:24,fontWeight:800,color:"#1e293b",marginBottom:20},
+  row3:     {display:"flex",gap:14,marginBottom:20,flexWrap:"wrap"},
+  stat:     {flex:1,minWidth:130,background:"#fff",borderRadius:12,padding:"16px 20px",boxShadow:"0 1px 4px rgba(0,0,0,.07)"},
+  statV:    {fontSize:20,fontWeight:800,marginBottom:4},
+  statL:    {fontSize:12,color:"#94a3b8"},
+  card:     {background:"#fff",borderRadius:14,padding:"20px",boxShadow:"0 1px 4px rgba(0,0,0,.07)",marginBottom:18},
+  cardH:    {fontSize:15,fontWeight:700,color:"#334155",marginBottom:14},
+  grid:     {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(175px,1fr))",gap:14},
+  dCard:    {background:"#fff",borderRadius:12,padding:16,boxShadow:"0 1px 4px rgba(0,0,0,.07)",cursor:"pointer"},
+  badge:    {padding:"2px 8px",borderRadius:99,fontSize:11,fontWeight:600,whiteSpace:"nowrap",flexShrink:0},
+  topRow:   {display:"flex",alignItems:"center",gap:8,padding:"9px 0",borderBottom:"1px solid #f1f5f9"},
+  monthRow: {display:"flex",alignItems:"flex-start",padding:"14px 0",borderBottom:"1px solid #f1f5f9"},
+  rank:     {width:24,height:24,background:"#6366f1",color:"#fff",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,flexShrink:0},
+  input:    {width:"100%",padding:"10px 14px",borderRadius:10,border:"1.5px solid #e2e8f0",fontSize:14,marginBottom:16,boxSizing:"border-box",outline:"none"},
+  sel:      {padding:"8px 12px",borderRadius:8,border:"1.5px solid #e2e8f0",fontSize:13,background:"#fff",outline:"none"},
+  btnP:     {padding:"9px 18px",background:"#6366f1",color:"#fff",border:"none",borderRadius:8,fontWeight:600,fontSize:13,cursor:"pointer"},
+  btnS:     {padding:"5px 10px",background:"#f1f5f9",color:"#334155",border:"none",borderRadius:6,fontSize:12,cursor:"pointer"},
+  backBtn:  {background:"none",border:"none",color:"#6366f1",cursor:"pointer",fontSize:14,marginBottom:12,padding:0},
+  th:       {padding:"8px 12px",textAlign:"left",fontSize:12,fontWeight:700,color:"#94a3b8"},
+  td:       {padding:"10px 12px",fontSize:14,color:"#334155"},
+  toast:    {position:"fixed",top:20,right:20,color:"#fff",padding:"10px 20px",borderRadius:10,fontWeight:600,fontSize:14,zIndex:9999,boxShadow:"0 4px 12px rgba(0,0,0,.2)"},
+  lbBg:    {position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:9999,cursor:"pointer"},
+};
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(React.createElement(App));
+  </script>
+</body>
+</html>
